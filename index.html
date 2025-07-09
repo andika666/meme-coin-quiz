@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Guess the Meme Coin</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Sound Effects -->
+  <audio id="sound-correct" src="https://raw.githubusercontent.com/ai-tools-id/assets/main/sfx/correct.mp3"></audio>
+  <audio id="sound-wrong" src="https://raw.githubusercontent.com/ai-tools-id/assets/main/sfx/wrong.mp3"></audio>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
 
@@ -117,11 +121,16 @@ function nextQuestion() {
 
 function checkAnswer(choice) {
   const feedback = document.getElementById("feedback");
+  const correctSound = document.getElementById("sound-correct");
+  const wrongSound = document.getElementById("sound-wrong");
+
   if (choice === currentAnswer) {
     feedback.textContent = "✅ Correct!";
     score++;
+    correctSound.play();
   } else {
     feedback.textContent = `❌ Wrong! Answer: ${currentAnswer}`;
+    wrongSound.play();
   }
   document.getElementById("score").textContent = score;
 }
@@ -160,5 +169,4 @@ function restartGame() {
 </script>
 
 </body>
-  </html>
-  
+</html>
