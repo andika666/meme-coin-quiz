@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guess the Meme Coin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+<div id="app" class="max-w-sm w-full">
+  <div id="namePrompt" class="bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+    <h1 class="text-xl font-bold mb-4">🎮 Enter Your Name</h1>
+    <input type="text" id="playerName" placeholder="Your name..." class="w-full p-2 rounded text-black mb-4">
+    <button onclick="startGame()" class="bg-blue-500 w-full py-2 rounded hover:bg-blue-600">Start Game</button>
+  </div>
+
+  <div id="game" class="hidden bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+    <h2 class="text-lg font-semibold mb-4">Guess the Meme Coin</h2>
+    <img id="coinImg" src="" alt="Meme Coin" class="w-40 h-40 mx-auto mb-4 rounded shadow">
+    <div id="choices" class="grid grid-cols-2 gap-2 mb-4"></div>
+    <p id="feedback" class="mb-2 font-bold"></p>
+    <p>Score: <span id="score">0</span> | Question: <span id="questionNum">1</span>/5</p>
+    <button onclick="nextQuestion()" class="mt-4 bg-blue-600 py-2 px-4 rounded hover:bg-blue-700 w-full">Next</button>
+  </div>
+
+  <div id="leaderboardScreen" class="hidden bg-gray-800 p-6 rounded-xl shadow-lg text-center">
+    <h2 class="text-xl font-bold mb-4">🏆 Leaderboard</h2>
+    <ul id="leaderboard" class="text-left mb-4"></ul>
+    <button onclick="restartGame()" class="bg-green-500 w-full py-2 rounded hover:bg-green-600">Play Again</button>
+  </div>
+</div>
+
+<script>
+const coins = [
+  { name: "BRETT", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/brett.png" },
+  { name: "TOSHI", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/toshi.png" },
+  { name: "DEGEN", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/degen.png" },
+  { name: "MOCHI", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/mochi.png" },
+  { name: "ANIME", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/anime.png" },
+  { name: "BRIUN", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/briun.png" },
+  { name: "PONKE", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/ponke.png" },
+  { name: "NORMIE", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/normie.png" },
+  { name: "DORAGON", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/doragon.png" },
+  { name: "YES", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/yes.png" },
+  { name: "COQ", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/coq.png" },
+  { name: "PEPE", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/pepe.png" },
+  { name: "BASED", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/based.png" },
+  { name: "SHAD", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/shad.png" },
+  { name: "WOJAK", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/wojak.png" },
+  { name: "DOGINME", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/doginme.png" },
+  { name: "WEN", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/wen.png" },
+  { name: "KEK", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/kek.png" },
+  { name: "CHAD", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/chad.png" },
+  { name: "ELONBASE", img: "https://raw.githubusercontent.com/ai-tools-id/assets/main/base/elonbase.png" }
+];
+
+let player = "";
+let score = 0;
+let questionCount = 0;
+let currentAnswer = "";
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function startGame() {
+  const nameInput = document.getElementById("playerName").value.trim();
+  if (!nameInput) return alert("Please enter your name!");
+
+  player = nameInput;
+  score = 0;
+  questionCount = 0;
+
+  document.getElementById("score").textContent = score;
+  document.getElementById("questionNum").textContent = questionCount + 1;
+
+  document.getElementById("namePrompt").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+
+  nextQuestion();
+}
+
+function nextQuestion() {
+  questionCount++;
+  if (questionCount > 5) {
+    saveToLeaderboard();
+    showLeaderboard();
+    return;
+  }
+
+  document.getElementById("questionNum").textContent = questionCount;
+
+  const shuffled = shuffle([...coins]);
+  const correct = shuffled[0];
+  currentAnswer = correct.name;
+  document.getElementById("coinImg").src = correct.img;
+
+  const options = shuffle([
+    correct.name,
+    ...shuffled.slice(1, 4).map(c => c.name)
+  ]);
+
+  const choicesDiv = document.getElementById("choices");
+  choicesDiv.innerHTML = "";
+
+  options.forEach(name => {
+    const btn = document.createElement("button");
+    btn.textContent = name;
+    btn.className = "bg-gray-700 hover:bg-green-600 py-2 rounded";
+    btn.onclick = () => checkAnswer(name);
+    choicesDiv.appendChild(btn);
+  });
+
+  document.getElementById("feedback").textContent = "";
+}
+
+function checkAnswer(choice) {
+  const feedback = document.getElementById("feedback");
+  if (choice === currentAnswer) {
+    feedback.textContent = "✅ Correct!";
+    score++;
+  } else {
+    feedback.textContent = `❌ Wrong! Answer: ${currentAnswer}`;
+  }
+  document.getElementById("score").textContent = score;
+}
+
+function saveToLeaderboard() {
+  const data = JSON.parse(localStorage.getItem("meme_leaderboard") || "[]");
+  data.push({ name: player, score });
+  data.sort((a, b) => b.score - a.score);
+  localStorage.setItem("meme_leaderboard", JSON.stringify(data.slice(0, 10)));
+}
+
+function showLeaderboard() {
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("leaderboardScreen").classList.remove("hidden");
+
+  const list = document.getElementById("leaderboard");
+  list.innerHTML = "";
+  const data = JSON.parse(localStorage.getItem("meme_leaderboard") || "[]");
+  data.forEach((entry, index) => {
+    const li = document.createElement("li");
+    li.textContent = `${index + 1}. ${entry.name} — ${entry.score}`;
+    list.appendChild(li);
+  });
+}
+
+function restartGame() {
+  document.getElementById("leaderboardScreen").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+
+  score = 0;
+  questionCount = 0;
+  document.getElementById("score").textContent = score;
+  document.getElementById("questionNum").textContent = 1;
+  nextQuestion();
+}
+</script>
+
+</body>
+  </html>
+  
